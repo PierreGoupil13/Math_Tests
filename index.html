@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Segment Intersection</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+
+    <script>
+        myCanvas.width=window.innerWidth;
+        myCanvas.height=window.innerHeight;
+
+        const A = {x:200,y:150};
+        const B = {x: 150, y:250};
+        const C = {x:50, y: 100};
+        const D = {x:250, y:200};
+
+        const ctx=myCanvas.getContext("2d");
+
+        let I = getIntersection(A,B,C,D);
+        animate();
+        function animate() {
+            ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+            drawSegment(A, B);
+            drawSegment(C, D);
+            drawPoint(A, "A");
+            drawPoint(B, "B");
+            drawPoint(C, "C");
+            drawPoint(D, "D");
+            drawPoint(I, "I");
+            requestAnimationFrame(animate);
+        }
+
+        /*
+            Ix = Ax + (Bx - Ax)*t = Cx + (Dx - Cx)*u
+            Iy = Ay + (By - Ay)*t = Cy + (Dy - Cy)*u
+
+            resolution :
+            Ax +(Bx - Ax)*t -Cx = (Dx - Cx)*u
+            // On laisse Dx - Cx car si le segment est vertical
+                ça vaudra 0
+
+
+            Ay +(By - Ay)*t -Cy = (Dy - Cy)*u
+            (Dx - Cx)(Ay - Cy + (By - Ay)*t) = (Dy - Cy)(Dx - Cx)*u
+            // Avec Eq1
+            (Dx - Cx)(Ay - Cy + (By - Ay)*t)
+            = (Dy - Cy)(Ax - Cx +(Bx - Ax)*t)
+
+            (Dx - Cx)(Ay - Cy) + (Dx - Cx)((By - Ay)*t)
+            = (Dy - Cy)(Ax - Cx) + (Dy - Cy)((Bx - Ax)*t)
+
+            // on fait -(Dy-Cy)(Ax-Cx) et -(Dy-Cy)((Bx-Ax)*t)
+
+            (Dx - Cx)(Ay - Cy) -(Dy - Cy)(Ax - Cx)
+            = (Dy - Cy)((Bx - Ax)*t) -(Dx - Cx)((By - Ay)*t)
+
+            // Factorise avec t
+
+            (Dx - Cx)(Ay - Cy) - (Dy - Cy)(Ax - Cx)
+            = ((Dy - Cy)(Bx - Ax) - (Dx - Cx)(By - Ay)) * t
+
+            t = (Dx - Cx)(Ay - Cy) - (Dy - Cy)(Ax - Cx) /
+                (Dy - Cy)(Bx - Ax) - (Dx - Cx)(By - Ay)
+
+            Enfaite on ne simplifie pas plus, puis on va implémenter
+            t avec une partie Top et Bottom puis faire :
+            t = Top / Bottom
+            Cependant il ne faut jamais que Bottom = 0 !!
+
+         */
+        function getIntersection(A, B, C, D){
+            const top = (D.x - C.x)*(A.y - C.y) - (D.y - C.y)*(A.x - C.x);
+            const bottom = (D.y - C.y)*(B.x - A.x) - (D.x - C.x)*(B.y - A.y);
+            const t = top / bottom;
+            return {
+                x: lerp(A.x, B.x, t),
+                y: lerp(A.y, B.y, t)
+            }
+        }
+
+        /*
+            Linear Interpolation
+
+            Permet de calculer des coordonnées de
+                points sur un segment
+
+            Exemple : Avec un t = 0.5, on trouve le point au centre
+                d'un segment
+         */
+        function lerp(A,B,t) {
+            return A + (B - A) * t;
+        }
+
+        // Tracer les segments
+        function drawSegment(pts1, pts2) {
+            ctx.beginPath();
+            ctx.moveTo(pts1.x, pts1.y);
+            ctx.lineTo(pts2.x, pts2.y);
+            ctx.stroke();
+        }
+        // Tracer les points
+        function drawPoint(point, label, isRed) {
+            ctx.beginPath();
+            ctx.fillStyle=isRed?"red":"white";
+            ctx.arc(point.x, point.y, 10,0,Math.PI*2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle="black";
+            ctx.textAlign="center";
+            ctx.textBaseline="middle";
+            ctx.font="bold 14px Arial";
+            ctx.fillText(label, point.x, point.y);
+        }
+
+
+    </script>
+</body>
+</html>
