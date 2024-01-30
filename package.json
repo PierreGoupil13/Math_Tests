@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "eslint": "8.56.0"
+  },
+  "scripts": {
+    "lint:js": "eslint /*.js",
+    "lint:html": "eslint --ext .html ./*.html",
+    "lint": "npm run lint:js"
+  }
+}
