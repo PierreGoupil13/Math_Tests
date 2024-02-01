@@ -25,9 +25,21 @@
 
         const ctx=myCanvas.getContext("2d");
 
-        let I = getIntersection(A,B,C,D);
+        let angle = 1;
+        const mouse = {x: 0, y:0};
+        document.onmousemove=(e)=>{
+            mouse.x = e.x;
+            mouse.y = e.y;
+        }
         animate();
         function animate() {
+            const radius = 50;
+            A.x = mouse.x + Math.cos(angle)*radius;
+            A.y = mouse.y - Math.sin(angle)*radius;
+            B.x = mouse.x - Math.cos(angle)*radius;
+            B.y = mouse.y + Math.sin(angle)*radius;
+
+            angle += 0.02;
             ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
             drawSegment(A, B);
             drawSegment(C, D);
@@ -35,7 +47,11 @@
             drawPoint(B, "B");
             drawPoint(C, "C");
             drawPoint(D, "D");
-            drawPoint(I, "I");
+            let I = getIntersection(A,B,C,D);
+            if (I) {
+
+                drawPoint(I, "I");
+            }
             requestAnimationFrame(animate);
         }
 
@@ -76,15 +92,28 @@
             t = Top / Bottom
             Cependant il ne faut jamais que Bottom = 0 !!
 
+            Trouver u :
+
+
          */
         function getIntersection(A, B, C, D){
-            const top = (D.x - C.x)*(A.y - C.y) - (D.y - C.y)*(A.x - C.x);
+            const tTop = (D.x - C.x)*(A.y - C.y) - (D.y - C.y)*(A.x - C.x);
+            const uTop = (C.y - A.y)*(A.x - B.x) - (C.x - A.x)*(A.y-B.y);
             const bottom = (D.y - C.y)*(B.x - A.x) - (D.x - C.x)*(B.y - A.y);
-            const t = top / bottom;
-            return {
-                x: lerp(A.x, B.x, t),
-                y: lerp(A.y, B.y, t)
+
+            if (bottom !== 0) {
+                const t = tTop / bottom;
+                const u = uTop / bottom;
+                if (t >= 0 && t <= 1 && u >= 0 && u <= 1){
+                    return {
+                        x: lerp(A.x, B.x, t),
+                        y: lerp(A.y, B.y, t),
+                        offset: t
+                    };
+                }
             }
+
+            return null;
         }
 
         /*
